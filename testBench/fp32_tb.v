@@ -1,5 +1,6 @@
 `timescale 1ns/100ps
-//FPU Testbench
+// FPU Testbench
+// Author: Haoguang Yang
 
 module FPU_TESTBENCH;
 
@@ -9,8 +10,8 @@ module FPU_TESTBENCH;
   //reg signed [63:0] i;
   reg reset;
 
-  wire [31:0] Zout;
-  wire done;
+  wire [31:0] Zout, Zout2;
+  wire done, done2;
   
   initial begin
       clk = 'b0;
@@ -58,29 +59,36 @@ module FPU_TESTBENCH;
     
     //Test 5
     #80
-    Xin = 'b00000000011111111111111111111111; // 0 deg
-    Yin = 'b00000000000000000000000000000001;
+    Xin = 'b00000000011111111111111111111111;   //1.1754942E-38
+    Yin = 'b00000000000000000000000000000001;   //1.4E-45
     reset = 1'b1;
     #2 reset = 1'b0;
     
-    //Test 5
+    //Test 6
     #80
-    Yin = 'b00000000011111111111111111111111; // 0 deg
-    Xin = 'b00000000000000000000000000000001;
+    Yin = 'b00000000111111111111111111111111; // 2.3509886E-38
+    Xin = 'b00000000000000000000000000000001; // 1.4E-45
     reset = 1'b1;
     #2 reset = 1'b0;
     
-    //Test 5
+    //Test 7
     #80
-    Xin = 'b00000000100000000000000000000000; // 0 deg
-    Yin = 'b10000000000000000000000000000001;
+    Xin = 'b00000000100000000000000000000000; // 1.17549435E-38
+    Yin = 'b10000000000000000000000000000001; // -1.4E-45
     reset = 1'b1;
     #2 reset = 1'b0;
     
-    //Test 5
+    //Test 8
     #80
-    Xin = 'b00000000100000000000000000000000; // 0 deg
-    Yin = 'b10000001000000000000000000000001;
+    Xin = 'b00000000100000000000000000000000; // 1.17549435E-38
+    Yin = 'b10000001000000000000000000000001; //-2.350989E-38
+    reset = 1'b1;
+    #2 reset = 1'b0;
+    
+    //Test 9
+    #80
+    Xin = 'b01000000001000000000000000000000; // 2.5
+    Yin = 'b11000000001000000000000000000000; //-2.5
     reset = 1'b1;
     #2 reset = 1'b0;
 
@@ -91,5 +99,6 @@ module FPU_TESTBENCH;
   end
 
   adder test_run(Xin, Yin, clk, reset, Zout, done);
+  multiplier test_run2(Xin, Yin, clk, reset, Zout2, done2);
 
 endmodule

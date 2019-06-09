@@ -1,7 +1,5 @@
 `timescale 1ns/100ps
-//CORDIC Testbench for sine and cosine for Final Project 
-
-//Claire Barnes
+//CORDIC Testbench for sine and cosine
 
 module CORDIC_TESTBENCH;
 

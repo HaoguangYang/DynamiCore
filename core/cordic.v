@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
-//CORDIC implementation for sine and cosine for Final Project 
-
-//Claire Barnes
+// CORDIC implementation for sine and cosine.
+// Fixed point wrapped in signed int32 integers.
+// Author: Haoguang Yang
+// Date: 2019-05-30
 
 module CORDIC(clock, cosine, sine, x_start, y_start, angle);
 
