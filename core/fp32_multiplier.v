@@ -67,7 +67,7 @@ module multiplier(
       special_cases:
       begin
 		z[31] <= a_ss ^ b_ss;
-      //if a is NaN or b is NaN return NaN 
+        //if a is NaN or b is NaN return NaN 
         if ((a_es == 255 && a_ms != 0) || (b_es == 255 && b_ms != 0)) begin
             z[30:23] <= 255;
             z[22] <= 1;
@@ -96,7 +96,7 @@ module multiplier(
             end
             s_output_z_stb <= 1;
         //if overflows return inf
-        end else if ((a_es > 190) && (b_es > 190)) begin
+        end else if ((a_es > 191) && (b_es > 191)) begin
             z[30:23] <= 255;
             z[22:0] <= 0;
             s_output_z_stb <= 1;
@@ -172,17 +172,27 @@ module multiplier(
       begin
       if (~s_output_z_stb) begin
         //z[31] <= z_s;
-        if (z_e == 1 && z_m[23] == 0) begin
+        // denormalized result
+        if (z_e <= 1 && z_m[46] == 0) begin
           z[30 : 23] <= 0;
-          z[22 : 0] <= z_m[45:23];
-        end
-        //if overflow occurs, return inf
-        else if (z_e > 254) begin
+          z[22 : 0] <= z_m[45:23] + (z_m[22] && (z_m[21] || z_m[20] || z_m[19] || z_m[23]));
+        end else if (z_e == 0 && z_m[46] == 1) begin
+          z[30 : 24] <= 0;
+          z[23 : 0] <= z_m[46:23] + (z_m[22] && (z_m[21] || z_m[20] || z_m[19] || z_m[23]));
+        end else if (z_e > 489) begin
+          z[30 : 23] <= 0;
+          z[22 : 0] <= (z_m[46:23] >>> (511-z_e+2)) +
+            (z_m[511-z_e+24] && (z_m[511-z_e+23] || z_m[511-z_e+22] || z_m[511-z_e+21] || z_m[511-z_e+25]));
+        end else if (z_e > 383) begin
+          z[30 : 0] <= 0;
+        end else if (z_e > 254) begin
+          //if overflow occurs, return inf
           z[22 : 0] <= 0;
           z[30 : 23] <= 255;
         end else begin
+          // default
           z[30 : 23] <= z_e[7:0];
-          z[22 : 0] <= z_m[45:23];
+          z[22 : 0] <= z_m[45:23] + (z_m[22] && (z_m[21] || z_m[20] || z_m[19] || z_m[23]));
         end
         s_output_z_stb <= 1;
       end

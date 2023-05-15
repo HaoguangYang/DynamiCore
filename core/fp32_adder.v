@@ -74,7 +74,7 @@ module adder(
         //if a is inf return inf
         end else if (a_es == 255) begin
           z[30:23] <= 255;
-          //if a is inf and signs don't match return nan
+          //if b is inf and signs don't match return nan
           if ((b_es == 255) && (a_ss != b_ss)) begin
               z[31] <= b_ss;
               z[22] <= 1;
@@ -208,8 +208,10 @@ module adder(
       pack:
       begin
       if (~s_output_z_stb) begin
-        z[22 : 0] <= (z_e[7:0] == 8'b11111111)? 23'b0 : z_m[26:4] + z_m[3];
-        z[30 : 23] <= z_e[7:0] + ((z_m[26:4] == 23'h7fffff) && z_m[3]);
+        //z[22 : 0] <= (z_e[7:0] == 8'b11111111)? 23'b0 : z_m[26:4];
+        z[22 : 0] <= (z_e[7:0] == 8'b11111111)? 23'b0 : z_m[26:4] + (z_m[3] && (z_m[2] || z_m[1] || z_m[0] || z_m[4]));
+        //z[30 : 23] <= z_e[7:0];
+        z[30 : 23] <= z_e[7:0] + ((z_m[26:4] == 23'h7fffff) && (z_m[3] && (z_m[2] || z_m[1] || z_m[0] || z_m[4])));
         z[31] <= z_s;
         s_output_z_stb <= 1;
       end

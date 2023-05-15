@@ -10,95 +10,52 @@ module FPU_TESTBENCH;
   //reg signed [63:0] i;
   reg reset;
 
-  wire [31:0] Zout, Zout2;
-  wire done, done2;
+  wire [31:0] Zadd, Zmul;
+  wire doneAdd, doneMul;
+  
+  integer i;
+  shortreal Xreal, Yreal, ZaddReal, ZmulReal;
   
   initial begin
       clk = 'b0;
       forever
       begin
-        #2 clk = !clk;
+        #5 clk = !clk;
       end
   end
+  
+  adder test_add(Xin, Yin, clk, reset, Zadd, doneAdd);
+  multiplier test_mul(Xin, Yin, clk, reset, Zmul, doneMul);
     
   initial begin
+    #5
+    // generate 1000 random numbers for testing
+    for(i=0; i<1000; i=i+1)
+    begin
+      @(posedge clk)
+      Xin = {$random()};
+      Yin = {$random()};
+      Xreal = $bitstoshortreal(Xin);
+      Yreal = $bitstoshortreal(Yin);
+      ZaddReal = Xreal + Yreal;
+      ZmulReal = Xreal * Yreal;
+      reset = 1'b1;
+      #5 reset = 1'b0;
+      wait (doneAdd == 1'b1);
+      if (Zadd != $shortrealtobits(ZaddReal)) begin
+        $display("Error in #%d: Verilog and C results are not consistent: %1.20e + %1.20e = %1.20e (0b%b)[got %1.20e (0b%b)]",
+          i, $bitstoshortreal(Xin), $bitstoshortreal(Yin), ZaddReal, $shortrealtobits(ZaddReal), $bitstoshortreal(Zadd), Zadd);
+      end
+      wait (doneMul == 1'b1);
+      if (Zmul != $shortrealtobits(ZmulReal)) begin
+        $display("Error in #%d: Verilog and C results are not consistent: %1.20e * %1.20e = %1.20e (0b%b)[got %1.20e (0b%b)]",
+          i, $bitstoshortreal(Xin), $bitstoshortreal(Yin), ZmulReal, $shortrealtobits(ZmulReal), $bitstoshortreal(Zmul), Zmul);
+      end
+    end
 
-    //set initial values
-    //Xin = 'b00110101010101010101010101010101;
-    //Yin = 'b00110101010101010101010101010101;
-    //reset = 1'b1;
-    //#2 reset = 1'b0;
-
-    // Test 1
-    //#80                                           
-    Xin = 'b00111111010011001100110011001101;    // 0.8
-    Yin = 'b10111111001100110011001100110011;    // -0.7
-    reset = 1'b1;
-    #2 reset = 1'b0;
-
-    // Test 2
-    #80
-    Yin = 'b00111111010011001100110011001101;    // 0.8
-    Xin = 'b10111111001100110011001100110011;    // -0.7
-    reset = 1'b1;
-    #2 reset = 1'b0;
-
-    // Test 3
-    #80
-    Xin = 'b10111111010011001100110011001101;    // -0.8
-    Yin = 'b00111111001100110011001100110011;    // 0.7
-    reset = 1'b1;
-    #2 reset = 1'b0;
-
-    // Test 4
-    #80
-    Yin = 'b10111111010011001100110011001101;    // -0.8
-    Xin = 'b00111111001100110011001100110011;    // 0.7
-    reset = 1'b1;
-    #2 reset = 1'b0;    
-    
-    //Test 5
-    #80
-    Xin = 'b00000000011111111111111111111111;   //1.1754942E-38
-    Yin = 'b00000000000000000000000000000001;   //1.4E-45
-    reset = 1'b1;
-    #2 reset = 1'b0;
-    
-    //Test 6
-    #80
-    Yin = 'b00000000111111111111111111111111; // 2.3509886E-38
-    Xin = 'b00000000000000000000000000000001; // 1.4E-45
-    reset = 1'b1;
-    #2 reset = 1'b0;
-    
-    //Test 7
-    #80
-    Xin = 'b00000000100000000000000000000000; // 1.17549435E-38
-    Yin = 'b10000000000000000000000000000001; // -1.4E-45
-    reset = 1'b1;
-    #2 reset = 1'b0;
-    
-    //Test 8
-    #80
-    Xin = 'b00000000100000000000000000000000; // 1.17549435E-38
-    Yin = 'b10000001000000000000000000000001; //-2.350989E-38
-    reset = 1'b1;
-    #2 reset = 1'b0;
-    
-    //Test 9
-    #80
-    Xin = 'b01000000001000000000000000000000; // 2.5
-    Yin = 'b11000000001000000000000000000000; //-2.5
-    reset = 1'b1;
-    #2 reset = 1'b0;
-
-   #500
    $write("Simulation has finished");
    //$stop;
 
   end
-
-  adder test_run(Xin, Yin, clk, reset, Zout, done);
-  multiplier test_run2(Xin, Yin, clk, reset, Zout2, done2);
 
 endmodule
